@@ -1,7 +1,7 @@
 $:<< File.join(File.dirname(__FILE__), 'stack')
 
 # Require the stack base
-%w(essential scm ruby_enterprise memcached postgresql mysql fix_nano_delete).each do |lib|
+%w(essential scm ruby_enterprise memcached mysql fix_nano_delete gemrc).each do |lib|
   require lib
 end
 
@@ -22,7 +22,14 @@ require 'apache'
 # Take what you want, leave what you don't
 # Build up your own and strip down your server until you get it right. 
 policy :stack, :roles => :app do
+  requires :fix_nano_delete
+  requires :gemrc
   requires :webserver               # Apache or Nginx
+  
+  requires :apache_etag_support
+  requires :apache_deflate_support
+  requires :apache_expires_support
+  
   requires :appserver               # Passenger
   requires :ruby_enterprise         # Ruby Enterprise edition
   requires :database                # MySQL or Postgres, also installs rubygems for each

@@ -9,7 +9,6 @@ package :apache, :provides => :webserver do
   end
 
   requires :build_essential
-  recommends :apache_etag_support, :apache_deflate_support, :apache_expires_support
 end
 
 package :apache2_prefork_dev do
@@ -19,11 +18,11 @@ end
 
 package :passenger, :provides => :appserver do
   description 'Phusion Passenger (mod_rails)'
-  version '2.2.4'
+  version '2.2.11'
   binaries = %w(passenger-config passenger-install-nginx-module passenger-install-apache2-module passenger-make-enterprisey passenger-memory-stats passenger-spawn-server passenger-status passenger-stress-test)
   
   gem 'passenger', :version => version do
-    binaries.each {|bin| post :install, "ln -s #{REE_PATH}/bin/#{bin} /usr/local/bin/#{bin}"}
+    binaries.each {|bin| post :install, "sudo ln -s #{REE_PATH}/bin/#{bin} /usr/local/bin/#{bin}"}
     
     post :install, 'echo -en "\n\n\n\n" | sudo passenger-install-apache2-module'
 
@@ -45,7 +44,7 @@ package :passenger, :provides => :appserver do
 
   verify do
     has_file "/etc/apache2/extras/passenger.conf"
-    has_file "#{REE_PATH}/ext/apache2/mod_passenger.so"
+    has_file "#{REE_PATH}/lib/ruby/gems/1.8/gems/passenger-#{version}/ext/apache2/mod_passenger.so"
     binaries.each {|bin| has_symlink "/usr/local/bin/#{bin}", "#{REE_PATH}/bin/#{bin}" }
   end
 
@@ -65,6 +64,7 @@ eol
 
   push_text config, apache_conf, :sudo => true
   verify { file_contains apache_conf, "Passenger-stack-etags"}
+  requires :apache
 end
 
 # mod_deflate, compress scripts before serving.
@@ -84,6 +84,7 @@ eol
 
   push_text config, apache_conf, :sudo => true
   verify { file_contains apache_conf, "Passenger-stack-deflate"}
+  requires :apache
 end
 
 # mod_expires, add long expiry headers to css, js and image files
@@ -102,4 +103,5 @@ eol
 
   push_text config, apache_conf, :sudo => true
   verify { file_contains apache_conf, "Passenger-stack-expires"}
+  requires :apache
 end
